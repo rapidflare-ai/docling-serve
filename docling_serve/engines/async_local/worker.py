@@ -9,7 +9,7 @@ from fastapi.responses import FileResponse
 from docling.datamodel.base_models import DocumentStream
 
 from docling_serve.datamodel.engines import TaskStatus
-from docling_serve.datamodel.requests import FileSource, HttpSource
+from docling_serve.datamodel.requests import BucketSource, FileSource, HttpSource
 from docling_serve.docling_conversion import convert_documents
 from docling_serve.response_preparation import process_results
 from docling_serve.storage import get_scratch
@@ -53,7 +53,9 @@ class AsyncLocalWorker:
                     for source in task.sources:
                         if isinstance(source, DocumentStream):
                             convert_sources.append(source)
-                        elif isinstance(source, FileSource):
+                        elif isinstance(source, FileSource) or isinstance(
+                            source, BucketSource
+                        ):
                             convert_sources.append(source.to_document_stream())
                         elif isinstance(source, HttpSource):
                             convert_sources.append(str(source.url))
