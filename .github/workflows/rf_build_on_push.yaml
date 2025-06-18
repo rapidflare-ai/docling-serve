@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    uses: .github/workflows/build-docker-ecr.yml@main
+    uses: .github/workflows/rf_build-dock-ecr.yml@main
     with:
       ecr_repo: rf/docling-serve-cu124
       aws_region: us-east-2
