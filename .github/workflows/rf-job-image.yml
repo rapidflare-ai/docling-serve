@@ -76,7 +76,7 @@ jobs:
         with:
           images: ${{ env.ECR_REGISTRY }}/${{ inputs.ecr_image_name }}
 
-      - name: Build and push image to ecr.io
+      - name: Build and push image to ECR
         id: ecr_push
         uses: docker/build-push-action@v5
         with:
