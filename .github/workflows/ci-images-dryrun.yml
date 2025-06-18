@@ -13,15 +13,15 @@ jobs:
     strategy:
       matrix:
         spec:
-          - name: docling-project/docling-serve
+          - name: docling-serve
             build_args: |
               UV_SYNC_EXTRA_ARGS=--no-extra cu124 --no-extra cpu
             platforms: linux/amd64, linux/arm64
-          - name: docling-project/docling-serve-cpu
+          - name: docling-serve-cpu
             build_args: |
               UV_SYNC_EXTRA_ARGS=--no-extra cu124 --no-extra flash-attn
             platforms: linux/amd64, linux/arm64
-          - name: docling-project/docling-serve-cu124
+          - name: docling-serve-cu124
             build_args: |
               UV_SYNC_EXTRA_ARGS=--no-extra cpu
             platforms: linux/amd64
@@ -36,6 +36,5 @@ jobs:
     with:
       publish: false
       build_args: ${{ matrix.spec.build_args }}
-      ghcr_image_name: ${{ matrix.spec.name }}
-      quay_image_name: ""
+      ecr_image_name: ${{ matrix.spec.name }}
       platforms: ${{ matrix.spec.platforms }}
