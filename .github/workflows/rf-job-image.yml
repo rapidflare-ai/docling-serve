@@ -1,4 +1,4 @@
-name: Build docling-serve container image
+name: Build RapidFlare docling-serve container image
 
 on:
   workflow_call:
