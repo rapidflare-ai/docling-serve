@@ -92,4 +92,4 @@ run-docling-gpu: ## Run the docling-serve container with GPU support and assign 
 	$(ECHO_PREFIX) printf "  %-12s Removing existing container if it exists...\n" "[CLEANUP]"
 	$(CMD_PREFIX) docker rm -f docling-serve-gpu 2>/dev/null || true
 	$(ECHO_PREFIX) printf "  %-12s Running docling-serve container with GPU support on port 5001...\n" "[RUN GPU]"
-	$(CMD_PREFIX) docker run -it --name docling-serve-gpu -p 5001:5001 ghcr.io/docling-project/docling-serve:main
+	$(CMD_PREFIX) docker run -it --gpus all --name docling-serve-gpu -p 5001:5001 ghcr.io/docling-project/docling-serve:main
