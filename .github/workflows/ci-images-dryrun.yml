@@ -32,7 +32,7 @@ jobs:
       attestations: write
       id-token: write
 
-    uses: ./.github/workflows/job-image.yml
+    uses: ./.github/workflows/rf-job-image.yml
     with:
       publish: false
       build_args: ${{ matrix.spec.build_args }}
