@@ -16,7 +16,8 @@ jobs:
           - name: docling-serve
             build_args: |
               UV_SYNC_EXTRA_ARGS=--no-extra cu124 --no-extra cpu
-            platforms: linux/amd64, linux/arm64
+            platforms: linux/amd64 
+          # , linux/arm64
           # - name: docling-serve-cpu
           #   build_args: |
           #     UV_SYNC_EXTRA_ARGS=--no-extra cu124 --no-extra flash-attn
