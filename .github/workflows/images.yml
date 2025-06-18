@@ -43,6 +43,5 @@ jobs:
       publish: true
       environment: registry-creds
       build_args: ${{ matrix.spec.build_args }}
-      ghcr_image_name: ${{ matrix.spec.name }}
-      quay_image_name: ${{ matrix.spec.name }}
+      ecr_image_name: ${{ matrix.spec.name }}
       platforms: ${{ matrix.spec.platforms }}
