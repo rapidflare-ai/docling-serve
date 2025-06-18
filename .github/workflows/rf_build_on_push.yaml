@@ -1,0 +1,12 @@
+name: Build and Push to ECR
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    uses: .github/workflows/build-docker-ecr.yml@main
+    with:
+      ecr_repo: rf/docling-serve-cu124
+      aws_region: us-east-2
