@@ -1,11 +1,12 @@
 name: Publish docling-serve images
 
 on:
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
   release:
     types: [published]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -17,18 +18,18 @@ jobs:
     strategy:
       matrix:
         spec:
-          - name: docling-project/docling-serve
+          - name: docling-serve
             build_args: |
               UV_SYNC_EXTRA_ARGS=--no-extra cu124 --no-extra cpu
             platforms: linux/amd64, linux/arm64
-          - name: docling-project/docling-serve-cpu
-            build_args: |
-              UV_SYNC_EXTRA_ARGS=--no-extra cu124 --no-extra flash-attn
-            platforms: linux/amd64, linux/arm64
-          - name: docling-project/docling-serve-cu124
-            build_args: |
-              UV_SYNC_EXTRA_ARGS=--no-extra cpu
-            platforms: linux/amd64
+          # - name: docling-serve-cpu
+          #   build_args: |
+          #     UV_SYNC_EXTRA_ARGS=--no-extra cu124 --no-extra flash-attn
+          #   platforms: linux/amd64, linux/arm64
+          # - name: docling-serve-cu124
+          #   build_args: |
+          #     UV_SYNC_EXTRA_ARGS=--no-extra cpu
+          #   platforms: linux/amd64
 
     permissions:
       packages: write
@@ -37,7 +38,7 @@ jobs:
       id-token: write
     secrets: inherit
 
-    uses: ./.github/workflows/job-image.yml
+    uses: ./.github/workflows/rf-job-image.yml
     with:
       publish: true
       environment: registry-creds
