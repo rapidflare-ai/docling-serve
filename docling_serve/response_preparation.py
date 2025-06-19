@@ -202,7 +202,7 @@ def process_results(
 
     elif conversion_options.result_bucket_path:
         store = obstore.store.from_url(str(conversion_options.result_bucket_path))
-        # Create an empty resposne to fill with results
+        # Create an empty response to fill with results
         response = RemoteConvertDocumentsResponse(
             results=[],
             processing_time=processing_time,
