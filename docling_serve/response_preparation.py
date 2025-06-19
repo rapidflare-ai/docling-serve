@@ -2,10 +2,13 @@ import logging
 import os
 import shutil
 import time
+import zipfile
 from collections.abc import Iterable
+from io import TextIOWrapper
 from pathlib import Path
 from typing import Union
 
+import obstore
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
 
@@ -14,7 +17,12 @@ from docling.datamodel.document import ConversionResult, ConversionStatus
 from docling_core.types.doc import ImageRefMode
 
 from docling_serve.datamodel.convert import ConvertDocumentsOptions
-from docling_serve.datamodel.responses import ConvertDocumentResponse, DocumentResponse
+from docling_serve.datamodel.responses import (
+    ConvertDocumentResponse,
+    DocumentResponse,
+    RemoteConvertDocumentResult,
+    RemoteConvertDocumentsResponse,
+)
 
 _log = logging.getLogger(__name__)
 
@@ -134,7 +142,7 @@ def process_results(
     conversion_options: ConvertDocumentsOptions,
     conv_results: Iterable[ConversionResult],
     work_dir: Path,
-) -> Union[ConvertDocumentResponse, FileResponse]:
+) -> Union[RemoteConvertDocumentsResponse, ConvertDocumentResponse, FileResponse]:
     # Let's start by processing the documents
     try:
         start_time = time.monotonic()
@@ -158,7 +166,9 @@ def process_results(
         )
 
     # We have some results, let's prepare the response
-    response: Union[FileResponse, ConvertDocumentResponse]
+    response: Union[
+        FileResponse, ConvertDocumentResponse, RemoteConvertDocumentsResponse
+    ]
 
     # Booleans to know what to export
     export_json = OutputFormat.JSON in conversion_options.to_formats
@@ -167,8 +177,10 @@ def process_results(
     export_txt = OutputFormat.TEXT in conversion_options.to_formats
     export_doctags = OutputFormat.DOCTAGS in conversion_options.to_formats
 
-    # Only 1 document was processed, and we are not returning it as a file
-    if len(conv_results) == 1 and not conversion_options.return_as_file:
+    # Only 1 document was processed, and we are not returning it as a file or bucket
+    if len(conv_results) == 1 and not (
+        conversion_options.return_as_file or conversion_options.result_bucket_path
+    ):
         conv_res = conv_results[0]
         document = _export_document_as_content(
             conv_res,
@@ -187,6 +199,44 @@ def process_results(
             processing_time=processing_time,
             timings=conv_res.timings,
         )
+
+    elif conversion_options.result_bucket_path:
+        store = obstore.store.from_url(str(conversion_options.result_bucket_path))
+        # Create an empty response to fill with results
+        response = RemoteConvertDocumentsResponse(
+            results=[],
+            processing_time=processing_time,
+        )
+        for conv_result in conv_results:
+            document = _export_document_as_content(
+                conv_result,
+                export_json=export_json,
+                export_html=export_html,
+                export_md=export_md,
+                export_txt=export_txt,
+                export_doctags=export_doctags,
+                image_mode=conversion_options.image_export_mode,
+                md_page_break_placeholder=conversion_options.md_page_break_placeholder,
+            )
+            # Result archive will be called <filename>.zip
+            rel_result_path = f"{conv_result.input.file.stem}.zip"
+            with obstore.open_writer(store, rel_result_path) as raw_writer:
+                with zipfile.ZipFile(raw_writer, "w") as zipf:
+                    with zipf.open(f"{document.filename}.json", "w") as zip_member:
+                        with TextIOWrapper(zip_member, encoding="utf-8") as text_stream:
+                            text_stream.write(document.model_dump_json(indent=2))
+
+            # Build a RemoteConvertDocumentResult for each conversion result, providing full bucket path to the result file
+            base_uri = str(conversion_options.result_bucket_path).rstrip("/")
+            result_uri = f"{base_uri}/{rel_result_path}"
+            remote_result = RemoteConvertDocumentResult(
+                result_uri=result_uri,
+                status=conv_result.status,
+                errors=conv_result.errors,
+                timings=conv_result.timings,
+            )
+            # Append the remote result to the response
+            response.results.append(remote_result)
 
     # Multiple documents were processed, or we are forced returning as a file
     else:

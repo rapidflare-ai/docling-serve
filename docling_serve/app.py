@@ -5,7 +5,7 @@ import shutil
 import time
 from contextlib import asynccontextmanager
 from io import BytesIO
-from typing import Annotated
+from typing import Annotated, Union
 
 from fastapi import (
     BackgroundTasks,
@@ -35,6 +35,7 @@ from docling_serve.datamodel.callback import (
 )
 from docling_serve.datamodel.convert import ConvertDocumentsOptions
 from docling_serve.datamodel.requests import (
+    ConvertDocumentBucketSourcesRequest,
     ConvertDocumentFileSourcesRequest,
     ConvertDocumentHttpSourcesRequest,
     ConvertDocumentsRequest,
@@ -44,6 +45,7 @@ from docling_serve.datamodel.responses import (
     ConvertDocumentResponse,
     HealthCheckResponse,
     MessageKind,
+    RemoteConvertDocumentsResponse,
     TaskStatusResponse,
     WebsocketMessage,
 )
@@ -236,6 +238,8 @@ def create_app():  # noqa: C901
             sources.extend(conversion_request.file_sources)
         if isinstance(conversion_request, ConvertDocumentHttpSourcesRequest):
             sources.extend(conversion_request.http_sources)
+        if isinstance(conversion_request, ConvertDocumentBucketSourcesRequest):
+            sources.extend(conversion_request.bucket_sources)
 
         task = await orchestrator.enqueue(
             sources=sources, options=conversion_request.options
@@ -515,7 +519,7 @@ def create_app():  # noqa: C901
     # Task result
     @app.get(
         "/v1alpha/result/{task_id}",
-        response_model=ConvertDocumentResponse,
+        response_model=Union[ConvertDocumentResponse, RemoteConvertDocumentsResponse],
         responses={
             200: {
                 "content": {"application/zip": {}},

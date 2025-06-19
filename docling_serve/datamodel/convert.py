@@ -270,6 +270,17 @@ class ConvertDocumentsOptions(BaseModel):
         ),
     ] = False
 
+    result_bucket_path: Annotated[
+        Optional[AnyUrl],
+        Field(
+            description=(
+                "If set, the results will be stored in the specified bucket. "
+                "The bucket URL should be in the format: `s3://bucket-name/path/to/dir/`."
+            ),
+            examples=["s3://my-bucket/converted-docs/"],
+        ),
+    ] = None
+
     do_table_structure: Annotated[
         bool,
         Field(
