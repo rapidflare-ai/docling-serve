@@ -53,9 +53,7 @@ class AsyncLocalWorker:
                     for source in task.sources:
                         if isinstance(source, DocumentStream):
                             convert_sources.append(source)
-                        elif isinstance(source, FileSource) or isinstance(
-                            source, BucketSource
-                        ):
+                        elif isinstance(source, (FileSource, BucketSource)):
                             convert_sources.append(source.to_document_stream())
                         elif isinstance(source, HttpSource):
                             convert_sources.append(str(source.url))
