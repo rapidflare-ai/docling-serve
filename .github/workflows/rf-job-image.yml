@@ -78,6 +78,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.ECR_REGISTRY }}/${{ inputs.ecr_image_name }}
+          tags: |
+            type=sha,format=long
 
       - name: Build and push image to ECR
         id: ecr_push
