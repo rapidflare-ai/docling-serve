@@ -55,7 +55,7 @@ jobs:
         if: ${{ inputs.publish }}
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: arn:aws:iam::886436930881:role/your-gh-action-role
+          role-to-assume: arn:aws:iam::886436930881:role/rf-github-docling-serve-ecr
           aws-region: us-east-2
       
       - name: Log in to Amazon ECR
