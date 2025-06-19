@@ -102,7 +102,23 @@ jobs:
           subject-name: ${{ env.ECR_REGISTRY }}/${{ inputs.ecr_image_name }}
           subject-digest: ${{ steps.ecr_push.outputs.digest }}
           push-to-registry: true
-      
+
+      - name: Delete existing :latest image (ECR requires delete first if immutable)
+        if: ${{ inputs.publish }}
+        run: |
+          aws ecr batch-delete-image \
+            --repository-name rf/${{ inputs.ecr_image_name }} \
+            --image-ids imageTag=latest \
+            --region us-east-2 || echo "No latest image to delete"
+            
+      - name: Re-tag image as latest and push
+        if: ${{ inputs.publish }}
+        run: |
+          docker pull ${{ env.ECR_REGISTRY }}/${{ inputs.ecr_image_name }}:${{ github.sha }}
+          docker tag ${{ env.ECR_REGISTRY }}/${{ inputs.ecr_image_name }}:${{ github.sha }} \
+                     ${{ env.ECR_REGISTRY }}/${{ inputs.ecr_image_name }}:latest
+          docker push ${{ env.ECR_REGISTRY }}/${{ inputs.ecr_image_name }}:latest
+
       # - name: Inspect the image details
       #   run: |
       #     echo "${{ steps.ecr_push.outputs.metadata }}"
