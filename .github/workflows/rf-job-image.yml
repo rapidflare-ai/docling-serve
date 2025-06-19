@@ -53,7 +53,7 @@ jobs:
 
       - name: Configure AWS credentials
         if: ${{ inputs.publish }}
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::886436930881:role/rf-github-docling-serve-ecr
           aws-region: us-east-2
