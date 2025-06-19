@@ -114,6 +114,7 @@ jobs:
       - name: Tag SHA image as latest and push
         if: ${{ inputs.publish }}
         run: |
+          docker pull ${{ env.ECR_REGISTRY }}/${{ inputs.ecr_image_name }}:${{ github.sha }}
           docker tag ${{ env.ECR_REGISTRY }}/${{ inputs.ecr_image_name }}:${{ github.sha }} \
                      ${{ env.ECR_REGISTRY }}/${{ inputs.ecr_image_name }}:latest
           docker push ${{ env.ECR_REGISTRY }}/${{ inputs.ecr_image_name }}:latest
