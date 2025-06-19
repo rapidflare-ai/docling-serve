@@ -111,13 +111,20 @@ jobs:
             --image-ids imageTag=latest \
             --region us-east-2 || echo "No latest image to delete"
             
-      - name: Tag SHA image as latest and push
+      - name: Tag SHA image as latest in ECR
         if: ${{ inputs.publish }}
         run: |
-          docker pull ${{ env.ECR_REGISTRY }}/${{ inputs.ecr_image_name }}:${{ github.sha }}
-          docker tag ${{ env.ECR_REGISTRY }}/${{ inputs.ecr_image_name }}:${{ github.sha }} \
-                     ${{ env.ECR_REGISTRY }}/${{ inputs.ecr_image_name }}:latest
-          docker push ${{ env.ECR_REGISTRY }}/${{ inputs.ecr_image_name }}:latest
+          aws ecr batch-get-image \
+            --repository-name rf/${{ inputs.ecr_image_name }} \
+            --image-ids imageTag=${{ github.sha }} \
+            --query 'images[0].imageManifest' \
+            --output text \
+          > imageManifest.json
+      
+          aws ecr put-image \
+            --repository-name rf/${{ inputs.ecr_image_name }} \
+            --image-tag latest \
+            --image-manifest file://imageManifest.json
 
       # - name: Inspect the image details
       #   run: |
