@@ -79,7 +79,7 @@ jobs:
         with:
           images: ${{ env.ECR_REGISTRY }}/${{ inputs.ecr_image_name }}
           tags: |
-            type=sha,format=long
+            type=sha,format=short
 
       - name: Build and push image to ECR
         id: ecr_push
